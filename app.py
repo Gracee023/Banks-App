@@ -4,22 +4,23 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
-app.secret_key = 'vidhis'  # Ensure this is set to a secure random key in production
+app = Flask(_name_, template_folder='templates', static_folder='static')
+app.secret_key = 'grace'  # Ensure this is set to a secure random key in production
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///database.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://bankapp_ox2p_user:FlkJGXoWpNsdFho62SjJEWlmrCzljeub@dpg-crnisvl6l47c73ah52jg-a/bankapp_ox2p')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # Database model for User
 class User(db.Model):
-    __tablename__ = 'users'
+    _tablename_ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
 
-    def __init__(self, username, password):
+    def _init_(self, username, password):
         self.username = username
         self.password = generate_password_hash(password)
 
@@ -28,18 +29,18 @@ class User(db.Model):
 
 # Database model for User_Transfer_List
 class User_Transfer_List(db.Model):
-    __tablename__ = 'User_Transfer_List'
+    _tablename_ = 'User_Transfer_List'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
     bank_id = db.Column(db.Integer)
     balance = db.Column(db.Float)
 
-    def __init__(self, username, bank_id, balance):
+    def _init_(self, username, bank_id, balance):
         self.username = username
         self.bank_id = bank_id
         self.balance = balance
 
-    def __repr__(self):
+    def _repr_(self):
         return f"{self.id} | {self.username} | {self.bank_id} | {self.balance}"
 
 def create_one_time_entry():
@@ -78,10 +79,37 @@ def index():
     return render_template('index.html', username=username)
 
 # Route to display the transfer list
-@app.route('/transferlist', methods=['GET', 'POST'])
+@app.route('/transferlist', methods=['GET'])
 @login_required
 def transferlist():
+    # Query the User_Transfer_List table
     order_list = User_Transfer_List.query.order_by(User_Transfer_List.id).all()
+
+    # If the table is empty, insert sample records
+    if not order_list:
+        sample_transfers = [
+            {"username": "reey", "bank_id": 12345, "balance": 1000.00},
+            {"username": "alex", "bank_id": 67890, "balance": 1500.00},
+            {"username": "jane", "bank_id": 54321, "balance": 2000.00},
+            {"username": "john", "bank_id": 98765, "balance": 2500.00},
+            {"username": "ben", "bank_id": 11111, "balance": 3000.00},
+        ]
+        
+        for transfer in sample_transfers:
+            new_transfer = User_Transfer_List(
+                username=transfer["username"],
+                bank_id=transfer["bank_id"],
+                balance=transfer["balance"]
+            )
+            db.session.add(new_transfer)
+        
+        db.session.commit()
+        # Query again to include the newly added sample records
+        order_list = User_Transfer_List.query.order_by(User_Transfer_List.id).all()
+
+    # Log the results for debugging
+    app.logger.info(f"Order List: {order_list}")
+    
     return render_template('transferlist.html', order_list=order_list)
 
 @app.route('/transfer', methods=['GET', 'POST'])
@@ -184,7 +212,6 @@ def account_overview():
 @login_required
 def credit_card():
     # Add logic here to handle credit card information
-    # For example, display a form to add or update credit card details
     return render_template('credit_card.html')
 
 # Route for loan management
@@ -192,10 +219,25 @@ def credit_card():
 @login_required
 def loan_management():
     # Add logic here to handle loan management functionality
-    # For example, display a form for managing loans
     return render_template('loan_management.html')
 
-if __name__ == "__main__":
+@app.route('/add_sample_transfer')
+def add_sample_transfer():
+    new_transfer = User_Transfer_List(username="Test User", bank_id=123456789, balance=100.0)
+    db.session.add(new_transfer)
+    db.session.commit()
+    
+    return "Sample transfer added"
+
+@app.route('/debug/transferlist')
+def debug_transferlist():
+    # Fetch all transfer entries
+    order_list = User_Transfer_List.query.all()
+    
+    # Return the data for debugging purposes
+    return str(order_list) if order_list else "No transfer records found"
+
+if _name_ == "_main_":
     with app.app_context():
         db.create_all()  # Create the database tables
         create_one_time_entry()  # Add initial data if the table is empty
