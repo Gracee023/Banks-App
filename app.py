@@ -237,7 +237,7 @@ def debug_transferlist():
     # Return the data for debugging purposes
     return str(order_list) if order_list else "No transfer records found"
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Create the database tables
         create_one_time_entry()  # Add initial data if the table is empty
