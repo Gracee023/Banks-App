@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
-app = Flask(_name_, template_folder='templates', static_folder='static')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'grace'  # Ensure this is set to a secure random key in production
 
 # Database configuration
