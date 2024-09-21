@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.secret_key = 'grace'  # Ensure this is set to a secure random key in production
+app.secret_key = 'vidhis'  # Ensure this is set to a secure random key in production
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://bankapp_ox2p_user:FlkJGXoWpNsdFho62SjJEWlmrCzljeub@dpg-crnisvl6l47c73ah52jg-a/bankapp_ox2p')
