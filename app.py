@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 
 # Database model for User
 class User(db.Model):
-    _tablename_ = 'users'
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
@@ -29,7 +29,7 @@ class User(db.Model):
 
 # Database model for User_Transfer_List
 class User_Transfer_List(db.Model):
-    _tablename_ = 'User_Transfer_List'
+    __tablename__ = 'User_Transfer_List'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
     bank_id = db.Column(db.Integer)
