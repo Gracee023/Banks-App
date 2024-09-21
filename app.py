@@ -17,10 +17,10 @@ db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
 
-    def _init_(self, username, password):
+    def __init__(self, username, password):
         self.username = username
         self.password = generate_password_hash(password)
 
@@ -35,12 +35,12 @@ class User_Transfer_List(db.Model):
     bank_id = db.Column(db.Integer)
     balance = db.Column(db.Float)
 
-    def _init_(self, username, bank_id, balance):
+    def __init__(self, username, bank_id, balance):
         self.username = username
         self.bank_id = bank_id
         self.balance = balance
 
-    def _repr_(self):
+    def __repr__(self):
         return f"{self.id} | {self.username} | {self.bank_id} | {self.balance}"
 
 def create_one_time_entry():
@@ -79,37 +79,10 @@ def index():
     return render_template('index.html', username=username)
 
 # Route to display the transfer list
-@app.route('/transferlist', methods=['GET'])
+@app.route('/transferlist', methods=['GET', 'POST'])
 @login_required
 def transferlist():
-    # Query the User_Transfer_List table
     order_list = User_Transfer_List.query.order_by(User_Transfer_List.id).all()
-
-    # If the table is empty, insert sample records
-    if not order_list:
-        sample_transfers = [
-            {"username": "reey", "bank_id": 12345, "balance": 1000.00},
-            {"username": "alex", "bank_id": 67890, "balance": 1500.00},
-            {"username": "jane", "bank_id": 54321, "balance": 2000.00},
-            {"username": "john", "bank_id": 98765, "balance": 2500.00},
-            {"username": "ben", "bank_id": 11111, "balance": 3000.00},
-        ]
-        
-        for transfer in sample_transfers:
-            new_transfer = User_Transfer_List(
-                username=transfer["username"],
-                bank_id=transfer["bank_id"],
-                balance=transfer["balance"]
-            )
-            db.session.add(new_transfer)
-        
-        db.session.commit()
-        # Query again to include the newly added sample records
-        order_list = User_Transfer_List.query.order_by(User_Transfer_List.id).all()
-
-    # Log the results for debugging
-    app.logger.info(f"Order List: {order_list}")
-    
     return render_template('transferlist.html', order_list=order_list)
 
 @app.route('/transfer', methods=['GET', 'POST'])
@@ -212,6 +185,7 @@ def account_overview():
 @login_required
 def credit_card():
     # Add logic here to handle credit card information
+    # For example, display a form to add or update credit card details
     return render_template('credit_card.html')
 
 # Route for loan management
@@ -219,23 +193,8 @@ def credit_card():
 @login_required
 def loan_management():
     # Add logic here to handle loan management functionality
+    # For example, display a form for managing loans
     return render_template('loan_management.html')
-
-@app.route('/add_sample_transfer')
-def add_sample_transfer():
-    new_transfer = User_Transfer_List(username="Test User", bank_id=123456789, balance=100.0)
-    db.session.add(new_transfer)
-    db.session.commit()
-    
-    return "Sample transfer added"
-
-@app.route('/debug/transferlist')
-def debug_transferlist():
-    # Fetch all transfer entries
-    order_list = User_Transfer_List.query.all()
-    
-    # Return the data for debugging purposes
-    return str(order_list) if order_list else "No transfer records found"
 
 if __name__ == "__main__":
     with app.app_context():
